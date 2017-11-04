@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, Input, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, Input, ViewChild, Inject } from '@angular/core';
 import * as THREE from 'three';
 import { Lights } from './scene-subjects/lights';
 import { ToggleFish } from './scene-subjects/toggleFish';
@@ -35,6 +35,8 @@ export class WebglSceneComponent implements AfterViewInit {
 
   private clock: THREE.Clock = new THREE.Clock();
 
+  private window: Window;
+
 
   /* STAGE PROPERTIES */
   @Input()
@@ -52,9 +54,9 @@ export class WebglSceneComponent implements AfterViewInit {
 
 
   /* DEPENDENCY INJECTION (CONSTRUCTOR) */
-  constructor() { }
-
-
+  constructor(@Inject('Window') window: Window) {
+    this.window = window;
+  }
 
   /* STAGING, ANIMATION, AND RENDERING */
 
@@ -88,7 +90,7 @@ export class WebglSceneComponent implements AfterViewInit {
   }
 
   private getAspectRatio() {
-    return this.canvas.clientWidth / this.canvas.clientHeight;
+    return this.window.innerWidth / this.window.innerHeight;
   }
 
   /**
@@ -99,7 +101,7 @@ export class WebglSceneComponent implements AfterViewInit {
     // Use canvas element in template
     this.renderer = new THREE.WebGLRenderer({ canvas: this.canvas });
     this.renderer.setPixelRatio(devicePixelRatio);
-    this.renderer.setSize(this.canvas.clientWidth, this.canvas.clientHeight);
+    this.renderer.setSize(this.window.innerWidth, this.window.innerHeight);
 
     let component: WebglSceneComponent = this;
     (function render() {
@@ -121,11 +123,11 @@ export class WebglSceneComponent implements AfterViewInit {
   /**
    * Update scene after resizing.
    */
-  public onResize() {
+  public onResize(event) {
     this.camera.aspect = this.getAspectRatio();
     this.camera.updateProjectionMatrix();
 
-    this.renderer.setSize(this.canvas.clientWidth, this.canvas.clientHeight);
+    this.renderer.setSize(event.target.innerWidth, event.target.innerHeight);
   }
 
 

@@ -12,7 +12,9 @@ import { WebglSceneComponent } from './webgl-scene/webgl-scene.component';
   imports: [
     BrowserModule
   ],
-  providers: [],
+  providers: [
+    { provide: 'Window', useValue: window }
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
