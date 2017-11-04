@@ -37,6 +37,12 @@ export class WebglSceneComponent implements AfterViewInit {
 
   private window: Window;
 
+  private raycaster: THREE.Raycaster;
+
+  private mouse: THREE.Vector2 = new THREE.Vector2();
+
+  private togglefish: any;
+
 
   /* STAGE PROPERTIES */
   @Input()
@@ -61,9 +67,10 @@ export class WebglSceneComponent implements AfterViewInit {
   /* STAGING, ANIMATION, AND RENDERING */
 
   private createSceneSubjects() {
+    this.togglefish = new ToggleFish(this.scene);
     this.sceneSubjects = [
       new Lights(this.scene),
-      new ToggleFish(this.scene)
+      this.togglefish
     ];
   }
 
@@ -87,6 +94,13 @@ export class WebglSceneComponent implements AfterViewInit {
       this.farClippingPane
     );
     this.camera.position.z = this.cameraZ;
+
+    /* Raycaster */
+    this.raycaster = new THREE.Raycaster();
+
+    /* Add event listeners */
+    document.addEventListener( 'mousedown', this.onDocumentMouseDown.bind(this), false );
+    document.addEventListener( 'touchstart', this.onDocumentTouchStart.bind(this), false );
   }
 
   private getAspectRatio() {
@@ -102,6 +116,7 @@ export class WebglSceneComponent implements AfterViewInit {
     this.renderer = new THREE.WebGLRenderer({ canvas: this.canvas });
     this.renderer.setPixelRatio(devicePixelRatio);
     this.renderer.setSize(this.window.innerWidth, this.window.innerHeight);
+    this.renderer.setClearColor (0x444499, 1);
 
     let component: WebglSceneComponent = this;
     (function render() {
@@ -130,6 +145,28 @@ export class WebglSceneComponent implements AfterViewInit {
     this.renderer.setSize(event.target.innerWidth, event.target.innerHeight);
   }
 
+  public onDocumentTouchStart( event ) {
+    event.preventDefault();
+
+    event.clientX = event.touches[0].clientX;
+    event.clientY = event.touches[0].clientY;
+    this.onDocumentMouseDown( event );
+  }
+
+  public onDocumentMouseDown( event ) {
+    event.preventDefault();
+
+    this.mouse.x = ( event.clientX / this.renderer.domElement.clientWidth ) * 2 - 1;
+    this.mouse.y = - ( event.clientY / this.renderer.domElement.clientHeight ) * 2 + 1;
+
+    this.raycaster.setFromCamera( this.mouse, this.camera );
+
+    let intersects = this.raycaster.intersectObjects( this.scene.children );
+
+    if ( intersects.length > 0 && intersects[ 0 ].object.name === 'togglefish' ) {
+      this.togglefish.toggle();
+    }
+  }
 
 
   /* LIFECYCLE */
