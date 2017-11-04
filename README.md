@@ -25,3 +25,17 @@ Run `ng e2e` to execute the end-to-end tests via [Protractor](http://www.protrac
 ## Further help
 
 To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI README](https://github.com/angular/angular-cli/blob/master/README.md).
+
+## Resources
+- Exploring Animation And Interaction Techniques With WebGL (A Case Study)
+  https://www.smashingmagazine.com/2017/09/animation-interaction-techniques-webgl/
+- The Making of “The Aviator”: Animating a Basic 3D Scene with Three.js
+  https://tympanus.net/codrops/2016/04/26/the-aviator-animating-basic-3d-scene-threejs/
+- Yakudoo Copepens 
+  https://codepen.io/Yakudoo/  
+- Epic.net - 3D Games (including the 'Moments of Happiness' experiment)
+  https://www.epic.net/en/case-study/gaming/  
+- Three.js Example - Interactive Cubes
+  https://threejs.org/examples/canvas_interactive_cubes.html
+- Three.js Examples (stemkoski)
+  http://stemkoski.github.io/Three.js/
