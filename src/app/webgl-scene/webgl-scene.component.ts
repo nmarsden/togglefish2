@@ -48,6 +48,12 @@ export class WebglSceneComponent implements AfterViewInit {
 
   private isMouseDown: boolean = false;
 
+  private orbitDelaySecs: number = 30;
+
+  private timeMouseUp: number = 0;
+
+  private isCameraOrbiting: boolean = false;
+
 
   /* STAGE PROPERTIES */
   @Input()
@@ -161,6 +167,34 @@ export class WebglSceneComponent implements AfterViewInit {
         component.sceneSubjects[i].update(component.clock.getElapsedTime(), component.mousePos);
       }
 
+      // Decide if camera should be orbiting
+      if (component.isMouseDown) {
+        component.isCameraOrbiting = false;
+      } else {
+        // Camera is orbiting when no mouse/touch events for 30 seconds
+        component.isCameraOrbiting = (component.clock.getElapsedTime() - component.timeMouseUp) > component.orbitDelaySecs;
+      }
+
+      if (component.isCameraOrbiting) {
+        // Update camera position to orbit around the origin
+        let rotSpeed = 0.005;
+        let x = component.camera.position.x;
+        let z = component.camera.position.z;
+        component.camera.position.x = x * Math.cos(rotSpeed) + z * Math.sin(rotSpeed);
+        component.camera.position.z = z * Math.cos(rotSpeed) - x * Math.sin(rotSpeed);
+        component.camera.lookAt(new THREE.Vector3(0, 0, 0));
+      } else {
+        // Update camera to move towards its original position
+        let x = component.camera.position.x;
+        let z = component.camera.position.z;
+        let targetX = 0;
+        let targetZ = component.cameraZ;
+        component.camera.position.x += (targetX - x) * 0.1;
+        component.camera.position.z += (targetZ - z) * 0.1;
+        component.camera.lookAt(new THREE.Vector3(0, 0, 0));
+      }
+
+      // Render
       component.renderer.render(component.scene, component.camera);
     }());
   }
@@ -198,6 +232,7 @@ export class WebglSceneComponent implements AfterViewInit {
     event.preventDefault();
 
     this.isMouseDown = false;
+    this.timeMouseUp = this.clock.getElapsedTime();
   }
 
   public onDocumentMouseMove(event) {
