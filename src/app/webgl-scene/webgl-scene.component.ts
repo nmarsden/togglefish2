@@ -2,6 +2,7 @@ import { AfterViewInit, Component, ElementRef, Input, ViewChild, Inject } from '
 import * as THREE from 'three';
 import { Lights } from './scene-subjects/lights';
 import { ToggleFish } from './scene-subjects/toggleFish';
+import { Ground } from './scene-subjects/ground';
 
 // DEBUG: declare scene and THREE on the Window interface for use by Three.js Inspector
 declare global {
@@ -50,7 +51,7 @@ export class WebglSceneComponent implements AfterViewInit {
 
   /* STAGE PROPERTIES */
   @Input()
-  public cameraZ: number = 400;
+  public cameraZ: number = 500;
 
   @Input()
   public fieldOfView: number = 70;
@@ -74,7 +75,8 @@ export class WebglSceneComponent implements AfterViewInit {
     this.togglefish = new ToggleFish(this.scene);
     this.sceneSubjects = [
       new Lights(this.scene),
-      this.togglefish
+      this.togglefish,
+      new Ground(this.scene)
     ];
   }
 
@@ -97,7 +99,9 @@ export class WebglSceneComponent implements AfterViewInit {
       this.nearClippingPane,
       this.farClippingPane
     );
+    this.camera.position.y = 100;
     this.camera.position.z = this.cameraZ;
+    this.camera.rotation.x = -0.3;
 
     /* Raycaster */
     this.raycaster = new THREE.Raycaster();
@@ -144,6 +148,9 @@ export class WebglSceneComponent implements AfterViewInit {
     this.renderer.setPixelRatio(devicePixelRatio);
     this.renderer.setSize(this.window.innerWidth, this.window.innerHeight);
     this.renderer.setClearColor (0xc6f6ff, 1);
+
+    // Enable shadow rendering
+    this.renderer.shadowMap.enabled = true;
 
     let component: WebglSceneComponent = this;
     (function render() {

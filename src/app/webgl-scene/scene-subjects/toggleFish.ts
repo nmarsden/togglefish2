@@ -2,7 +2,7 @@ import * as THREE from 'three';
 
 export function ToggleFish(scene) {
 
-  const SIZE: number = 200;
+  const SIZE: number = 150;
 
   const COLOUR_TOGGLE_ON: number = 0x5abb5b;
   const COLOUR_TOGGLE_OFF: number = 0xea592e;
@@ -14,17 +14,20 @@ export function ToggleFish(scene) {
   // Body
   let bodyMaterial = new THREE.MeshPhongMaterial({ color: COLOUR_TOGGLE_OFF });
   let body = new THREE.Mesh(new THREE.BoxGeometry(SIZE, SIZE, SIZE), bodyMaterial);
+  body.castShadow = true;
 
   // Toggle
   let toggleBaseMaterial = new THREE.MeshPhongMaterial({ color: COLOUR_TOGGLE });
   let toggleBase = new THREE.Mesh(new THREE.BoxGeometry(SIZE / 4, SIZE / 10, SIZE / 4), toggleBaseMaterial);
   toggleBase.position.y = SIZE / 2 + SIZE / 10;
   toggleBase.name = 'toggle';
+  toggleBase.castShadow = true;
 
   let toggleShaftMaterial = new THREE.MeshPhongMaterial({ color: COLOUR_TOGGLE });
   let toggleShaft = new THREE.Mesh(new THREE.BoxGeometry(SIZE / 2, SIZE / 14, SIZE / 2), toggleShaftMaterial);
   toggleShaft.position.y = SIZE / 2 + SIZE / 5;
   toggleShaft.name = 'toggle';
+  toggleShaft.castShadow = true;
 
   let toggle = new THREE.Group();
   toggle.add(toggleBase);
