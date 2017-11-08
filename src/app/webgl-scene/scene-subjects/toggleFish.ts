@@ -14,6 +14,9 @@ export function ToggleFish(scene) {
   // Body
   let bodyMaterial = new THREE.MeshPhongMaterial({ color: COLOUR_TOGGLE_OFF });
 
+  // Fin
+  let fin: THREE.Mesh = null;
+
   // Toggle
   let toggleBaseMaterial = new THREE.MeshPhongMaterial({ color: COLOUR_TOGGLE });
   let toggleBase = new THREE.Mesh(new THREE.BoxGeometry(SIZE / 4, SIZE / 10, SIZE / 4), toggleBaseMaterial);
@@ -42,16 +45,27 @@ export function ToggleFish(scene) {
   let loader = new THREE.ObjectLoader();
   loader.load("../../../assets/togglefish.json",function ( obj ) {
 
+    // Seems like the export to ThreeJS from clara.io rotates the object around the Y-axis by PI
+    obj.rotateY(Math.PI);
+
+    // Set child object materials and reset vertex normals
+    (obj.children[0] as THREE.Mesh).material = bodyMaterial;
+    ((obj.children[0] as THREE.Mesh).geometry as THREE.Geometry).computeFlatVertexNormals();
+    (obj.children[1] as THREE.Mesh).material = bodyMaterial;
+    ((obj.children[1] as THREE.Mesh).geometry as THREE.Geometry).computeFlatVertexNormals();
+
     // Body
-    let mesh:THREE.Mesh = obj.children[0] as THREE.Mesh;
-    let bodyGeometry:THREE.Geometry = mesh.geometry as THREE.Geometry;
-    bodyGeometry.computeFlatVertexNormals();
-
-    let body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+    let body = (obj.children[0] as THREE.Mesh);
     body.name = 'togglefish-body';
-    body.castShadow = true;
 
-    togglefish.add(body);
+    // Fin
+    fin = (obj.children[1] as THREE.Mesh);
+    fin.name = 'togglefish-fin';
+    // -- alter the fin's pivot axis to be on the edge
+    (fin.geometry as THREE.Geometry).translate(0, -25, 0);
+    fin.translateY(25);
+
+    togglefish.add(obj);
   });
 
   this.normalize = function(v, vmin, vmax, tmin, tmax) {
@@ -79,6 +93,10 @@ export function ToggleFish(scene) {
     let rotationY = this.normalize(mousePos.x, -1, 1, -0.5, 0.5);
     togglefish.rotation.x += (rotationX - togglefish.rotation.x) * 0.1;
     togglefish.rotation.y += (rotationY - togglefish.rotation.y) * 0.1;
+
+    // Rotate fin
+    let finAngle = time % (2 * Math.PI);
+    fin.rotation.x =  (Math.cos(finAngle) * Math.PI/4) - Math.PI/2;
   };
 
   this.toggle = function() {
