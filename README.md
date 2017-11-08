@@ -41,3 +41,5 @@ To get more help on the Angular CLI use `ng help` or go check out the [Angular C
   http://stemkoski.github.io/Three.js/
 - Easy way to add touch support to your website  
   https://www.codicode.com/art/easy_way_to_add_touch_support_to_your_website.aspx
+- Clara.io - online 3D content creator with Threejs export support
+  https://clara.io  

@@ -2,12 +2,13 @@ import * as THREE from 'three';
 
 export function Lights(scene) {
 
-  let ambientLight = new THREE.AmbientLight(0xffffff, 0.2);
+  let ambientLight = new THREE.AmbientLight(0xffffff, 0.3);
   ambientLight.name = 'ambient light';
   scene.add(ambientLight);
 
-  let shadowLight = new THREE.DirectionalLight(0xffffff, .9);
-  shadowLight.position.set(0, 300, 30);
+  let shadowLight = new THREE.DirectionalLight(0xffffff, 1);
+  shadowLight.name = 'shadow light';
+  shadowLight.position.set(0, 300, 100);
   scene.add(shadowLight);
 
   // Allow shadow casting

@@ -13,8 +13,6 @@ export function ToggleFish(scene) {
 
   // Body
   let bodyMaterial = new THREE.MeshPhongMaterial({ color: COLOUR_TOGGLE_OFF });
-  let body = new THREE.Mesh(new THREE.BoxGeometry(SIZE, SIZE, SIZE), bodyMaterial);
-  body.castShadow = true;
 
   // Toggle
   let toggleBaseMaterial = new THREE.MeshPhongMaterial({ color: COLOUR_TOGGLE });
@@ -35,11 +33,26 @@ export function ToggleFish(scene) {
 
   // Togglefish
   let togglefish = new THREE.Group();
-  togglefish.add(body);
+  togglefish.name = 'togglefish';
   togglefish.add(toggle);
 
   // Add to scene
   scene.add(togglefish);
+
+  let loader = new THREE.ObjectLoader();
+  loader.load("../../../assets/togglefish.json",function ( obj ) {
+
+    // Body
+    let mesh:THREE.Mesh = obj.children[0] as THREE.Mesh;
+    let bodyGeometry:THREE.Geometry = mesh.geometry as THREE.Geometry;
+    bodyGeometry.computeFlatVertexNormals();
+
+    let body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+    body.name = 'togglefish-body';
+    body.castShadow = true;
+
+    togglefish.add(body);
+  });
 
   this.normalize = function(v, vmin, vmax, tmin, tmax) {
     let nv = Math.max(Math.min(v, vmax), vmin);
