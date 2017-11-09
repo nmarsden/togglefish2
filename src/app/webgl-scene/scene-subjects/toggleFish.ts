@@ -17,6 +17,7 @@ export function ToggleFish(scene) {
   // Fins
   let finRight: THREE.Mesh = null;
   let finLeft: THREE.Mesh = null;
+  let finTail: THREE.Mesh = null;
 
   // Toggle
   let toggleBaseMaterial = new THREE.MeshPhongMaterial({ color: COLOUR_TOGGLE });
@@ -47,8 +48,9 @@ export function ToggleFish(scene) {
   loader.load("../../../assets/togglefish.json", ( obj ) => {
 
     // Seems like the export to ThreeJS from clara.io rotates the object around the Y-axis by PI
-    // obj.rotateY(Math.PI/2); // Face front
     obj.rotateY(Math.PI); // Face right
+    // obj.rotateY(-Math.PI/2); // Face back
+    // obj.rotateY(Math.PI/2); // Face front
 
     // Set child object materials and reset vertex normals
     obj.children.map((mesh: THREE.Mesh) => {
@@ -67,6 +69,12 @@ export function ToggleFish(scene) {
     // -- alter the finLeft's pivot axis to be on the edge
     (finLeft.geometry as THREE.Geometry).translate(0, 25, 0);
     finLeft.translateY(-25);
+
+    // Fin Tail
+    finTail = this.getChildByName(obj, 'togglefish_fin_tail');
+    // -- alter the finTail's pivot axis to be on the edge
+    (finTail.geometry as THREE.Geometry).translate(-25, 0, 0);
+    finTail.translateX(25);
 
     togglefish.add(obj);
   });
@@ -104,10 +112,11 @@ export function ToggleFish(scene) {
     togglefish.rotation.y += (rotationY - togglefish.rotation.y) * 0.1;
 
     // Rotate fins
-    if (finRight !== null && finLeft !== null) {
+    if (finRight !== null && finLeft !== null && finTail !== null) {
       let finAngle = time % (2 * Math.PI);
       finRight.rotation.x =  (Math.cos(finAngle) * Math.PI/4) - Math.PI/2;
       finLeft.rotation.x =  (Math.cos(finAngle + Math.PI) * Math.PI/4) - Math.PI/2;
+      finTail.rotation.z =  (Math.cos(finAngle) * Math.PI/4) + Math.PI;
     }
   };
 
