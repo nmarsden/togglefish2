@@ -14,8 +14,9 @@ export function ToggleFish(scene) {
   // Body
   let bodyMaterial = new THREE.MeshPhongMaterial({ color: COLOUR_TOGGLE_OFF });
 
-  // Fin
-  let fin: THREE.Mesh = null;
+  // Fins
+  let finRight: THREE.Mesh = null;
+  let finLeft: THREE.Mesh = null;
 
   // Toggle
   let toggleBaseMaterial = new THREE.MeshPhongMaterial({ color: COLOUR_TOGGLE });
@@ -43,30 +44,38 @@ export function ToggleFish(scene) {
   scene.add(togglefish);
 
   let loader = new THREE.ObjectLoader();
-  loader.load("../../../assets/togglefish.json",function ( obj ) {
+  loader.load("../../../assets/togglefish.json", ( obj ) => {
 
     // Seems like the export to ThreeJS from clara.io rotates the object around the Y-axis by PI
-    obj.rotateY(Math.PI);
+    // obj.rotateY(Math.PI/2); // Face front
+    obj.rotateY(Math.PI); // Face right
 
     // Set child object materials and reset vertex normals
-    (obj.children[0] as THREE.Mesh).material = bodyMaterial;
-    ((obj.children[0] as THREE.Mesh).geometry as THREE.Geometry).computeFlatVertexNormals();
-    (obj.children[1] as THREE.Mesh).material = bodyMaterial;
-    ((obj.children[1] as THREE.Mesh).geometry as THREE.Geometry).computeFlatVertexNormals();
+    obj.children.map((mesh: THREE.Mesh) => {
+      mesh.material = bodyMaterial;
+      (mesh.geometry as THREE.Geometry).computeFlatVertexNormals()
+    });
 
-    // Body
-    let body = (obj.children[0] as THREE.Mesh);
-    body.name = 'togglefish-body';
+    // Fin Right
+    finRight = this.getChildByName(obj, 'togglefish_fin_right');
+    // -- alter the finRight's pivot axis to be on the edge
+    (finRight.geometry as THREE.Geometry).translate(0, -25, 0);
+    finRight.translateY(25);
 
-    // Fin
-    fin = (obj.children[1] as THREE.Mesh);
-    fin.name = 'togglefish-fin';
-    // -- alter the fin's pivot axis to be on the edge
-    (fin.geometry as THREE.Geometry).translate(0, -25, 0);
-    fin.translateY(25);
+    // Fin Left
+    finLeft = this.getChildByName(obj, 'togglefish_fin_left');
+    // -- alter the finLeft's pivot axis to be on the edge
+    (finLeft.geometry as THREE.Geometry).translate(0, 25, 0);
+    finLeft.translateY(-25);
 
     togglefish.add(obj);
   });
+
+  this.getChildByName = function(obj: THREE.Object3D, name: String): THREE.Mesh {
+    return obj.children.find((child: THREE.Object3D) => {
+      return child.name === name;
+    }) as THREE.Mesh;
+  };
 
   this.normalize = function(v, vmin, vmax, tmin, tmax) {
     let nv = Math.max(Math.min(v, vmax), vmin);
@@ -94,9 +103,12 @@ export function ToggleFish(scene) {
     togglefish.rotation.x += (rotationX - togglefish.rotation.x) * 0.1;
     togglefish.rotation.y += (rotationY - togglefish.rotation.y) * 0.1;
 
-    // Rotate fin
-    let finAngle = time % (2 * Math.PI);
-    fin.rotation.x =  (Math.cos(finAngle) * Math.PI/4) - Math.PI/2;
+    // Rotate fins
+    if (finRight !== null && finLeft !== null) {
+      let finAngle = time % (2 * Math.PI);
+      finRight.rotation.x =  (Math.cos(finAngle) * Math.PI/4) - Math.PI/2;
+      finLeft.rotation.x =  (Math.cos(finAngle + Math.PI) * Math.PI/4) - Math.PI/2;
+    }
   };
 
   this.toggle = function() {
