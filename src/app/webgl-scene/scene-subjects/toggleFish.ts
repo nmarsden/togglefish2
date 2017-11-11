@@ -116,20 +116,20 @@ export function ToggleFish(scene) {
     return tv;
   };
 
-  this.update = function(time, mousePos) {
+  this.update = function(time, mouseDownPos) {
     // Move a fraction towards the desired position
     // Restricting movement between -100 and 100 on the horizontal and vertical axis,
     const RANGE = 100;
 
-    let targetX = this.normalize(mousePos.x, -1, 1, -RANGE, RANGE);
-    let targetY = this.normalize(mousePos.y, -1, 1, -RANGE, RANGE);
+    let targetX = this.normalize(mouseDownPos.x, -1, 1, -RANGE, RANGE);
+    let targetY = this.normalize(mouseDownPos.y, -1, 1, -RANGE, RANGE);
     togglefish.position.x += (targetX - togglefish.position.x) * 0.1;
     togglefish.position.y += (targetY - togglefish.position.y) * 0.1;
 
     // Rotate a fraction towards the desired rotation
     // Restricting rotation between -0.5 and 0.5 on the horizontal and vertical axis,
-    let rotationX = -1 * this.normalize(mousePos.y, -1, 1, -0.5, 0.5);
-    let rotationY = this.normalize(mousePos.x, -1, 1, -0.5, 0.5);
+    let rotationX = -1 * this.normalize(mouseDownPos.y, -1, 1, -0.5, 0.5);
+    let rotationY = this.normalize(mouseDownPos.x, -1, 1, -0.5, 0.5);
     togglefish.rotation.x += (rotationX - togglefish.rotation.x) * 0.1;
     togglefish.rotation.y += (rotationY - togglefish.rotation.y) * 0.1;
 

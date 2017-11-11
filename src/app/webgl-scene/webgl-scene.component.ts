@@ -44,7 +44,7 @@ export class WebglSceneComponent implements AfterViewInit {
 
   private togglefish: any;
 
-  private mousePos = { x:0, y:0 };
+  private mouseDownPos = { x:0, y:0 };
 
   private isMouseDown: boolean = false;
 
@@ -54,6 +54,9 @@ export class WebglSceneComponent implements AfterViewInit {
 
   private isCameraOrbiting: boolean = false;
 
+  private finishedFollowingDelaySecs: number = 1;
+
+  private isFishFollowing: boolean = false;
 
   /* STAGE PROPERTIES */
   @Input()
@@ -164,15 +167,18 @@ export class WebglSceneComponent implements AfterViewInit {
 
       // Update scene objects
       for(let i=0; i<component.sceneSubjects.length; i++) {
-        component.sceneSubjects[i].update(component.clock.getElapsedTime(), component.mousePos);
+        component.sceneSubjects[i].update(component.clock.getElapsedTime(), component.mouseDownPos);
       }
 
       // Decide if camera should be orbiting
       if (component.isMouseDown) {
         component.isCameraOrbiting = false;
+        component.isFishFollowing = true;
       } else {
         // Camera is orbiting when no mouse/touch events for 30 seconds
         component.isCameraOrbiting = (component.clock.getElapsedTime() - component.timeMouseUp) > component.orbitDelaySecs;
+        // Fish has finished following when no mouse/touch events for 1 second
+        component.isFishFollowing = (component.clock.getElapsedTime() - component.timeMouseUp) < component.finishedFollowingDelaySecs;
       }
 
       if (component.isCameraOrbiting) {
@@ -192,6 +198,10 @@ export class WebglSceneComponent implements AfterViewInit {
         component.camera.position.x += (targetX - x) * 0.1;
         component.camera.position.z += (targetZ - z) * 0.1;
         component.camera.lookAt(new THREE.Vector3(0, 0, 0));
+      }
+
+      if (!component.isFishFollowing) {
+        component.mouseDownPos = { x:0, y:0 };
       }
 
       // Render
@@ -243,7 +253,7 @@ export class WebglSceneComponent implements AfterViewInit {
       // Convert the mouse position to a normalized value between -1 and 1
       let tx = -1 + (event.clientX / this.renderer.domElement.clientWidth) * 2;
       let ty = 1 - (event.clientY / this.renderer.domElement.clientHeight) * 2;
-      this.mousePos = { x:tx, y:ty };
+      this.mouseDownPos = { x:tx, y:ty };
     }
   }
 
