@@ -10,7 +10,7 @@ export function ToggleFish(scene) {
   const COLOUR_EYE_BALL: number = 0xFFFFFF;
   const COLOUR_EYE_PUPIL: number = 0x000000;
 
-
+  let isFinishedLoading: boolean = false;
   let isToggleOn: boolean = false;
 
   // Body
@@ -24,6 +24,8 @@ export function ToggleFish(scene) {
   // Eyes
   let eyeBallMaterial = new THREE.MeshPhongMaterial({ color: COLOUR_EYE_BALL });
   let eyePupilMaterial = new THREE.MeshPhongMaterial({ color: COLOUR_EYE_PUPIL });
+  let eyeRight: THREE.Mesh = null;
+  let eyeLeft: THREE.Mesh = null;
 
   // Toggle
   let toggleBaseMaterial = new THREE.MeshPhongMaterial({ color: COLOUR_TOGGLE });
@@ -85,20 +87,24 @@ export function ToggleFish(scene) {
     finTail.translateX(25);
 
     // Eye Right
-    let eyeRight = this.getChildByName(obj, 'togglefish_eye_right');
+    eyeRight = this.getChildByName(obj, 'togglefish_eye_right');
+    eyeRight.up.set(0, -1, 0);
     let eyeBallRight = this.getChildByName(eyeRight, 'togglefish_eye_right_ball');
     eyeBallRight.material = eyeBallMaterial;
     let eyePupilRight = this.getChildByName(eyeRight, 'togglefish_eye_right_pupil');
     eyePupilRight.material = eyePupilMaterial;
 
     // Eye Left
-    let eyeLeft = this.getChildByName(obj, 'togglefish_eye_left');
+    eyeLeft = this.getChildByName(obj, 'togglefish_eye_left');
+    eyeLeft.up.set(0, -1, 0);
     let eyeBallLeft = this.getChildByName(eyeLeft, 'togglefish_eye_left_ball');
     eyeBallLeft.material = eyeBallMaterial;
     let eyePupilLeft = this.getChildByName(eyeLeft, 'togglefish_eye_left_pupil');
     eyePupilLeft.material = eyePupilMaterial;
 
     togglefish.add(obj);
+
+    isFinishedLoading = true;
   });
 
   this.getChildByName = function(obj: THREE.Object3D, name: String): THREE.Mesh {
@@ -117,7 +123,7 @@ export function ToggleFish(scene) {
   };
 
   this.update = function(time, mouseDownPos) {
-    // Move a fraction towards the desired position
+    // Move fish a fraction towards the desired position
     // Restricting movement between -100 and 100 on the horizontal and vertical axis,
     const RANGE = 100;
 
@@ -126,20 +132,30 @@ export function ToggleFish(scene) {
     togglefish.position.x += (targetX - togglefish.position.x) * 0.1;
     togglefish.position.y += (targetY - togglefish.position.y) * 0.1;
 
-    // Rotate a fraction towards the desired rotation
+    // Rotate fish a fraction towards the desired rotation
     // Restricting rotation between -0.5 and 0.5 on the horizontal and vertical axis,
     let rotationX = -1 * this.normalize(mouseDownPos.y, -1, 1, -0.5, 0.5);
     let rotationY = this.normalize(mouseDownPos.x, -1, 1, -0.5, 0.5);
     togglefish.rotation.x += (rotationX - togglefish.rotation.x) * 0.1;
     togglefish.rotation.y += (rotationY - togglefish.rotation.y) * 0.1;
 
-    // Rotate fins
-    if (finRight !== null && finLeft !== null && finTail !== null) {
-      let finAngle = time % (2 * Math.PI);
-      finRight.rotation.x =  (Math.cos(finAngle) * Math.PI/4) - Math.PI/2;
-      finLeft.rotation.x =  (Math.cos(finAngle + Math.PI) * Math.PI/4) - Math.PI/2;
-      finTail.rotation.z =  (Math.cos(finAngle) * Math.PI/4) + Math.PI;
+    if (!isFinishedLoading) {
+      return;
     }
+
+    // Animate fins
+    let finAngle = time % (2 * Math.PI);
+    finRight.rotation.x =  (Math.cos(finAngle) * Math.PI/4) - Math.PI/2;
+    finLeft.rotation.x =  (Math.cos(finAngle + Math.PI) * Math.PI/4) - Math.PI/2;
+    finTail.rotation.z =  (Math.cos(finAngle) * Math.PI/4) + Math.PI;
+
+    // Rotate eyes to look at target
+    const EYE_RANGE = 1000;
+    let eyeTargetX = this.normalize(mouseDownPos.x, -1, 1, -EYE_RANGE, EYE_RANGE);
+    let eyeTargetY = 0;
+    let eyeTargetVector = new THREE.Vector3(eyeTargetX, eyeTargetY, EYE_RANGE);
+    eyeRight.lookAt( eyeTargetVector );
+    eyeLeft.lookAt( eyeTargetVector );
   };
 
   this.toggle = function() {
