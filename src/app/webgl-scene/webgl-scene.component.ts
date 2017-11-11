@@ -108,9 +108,9 @@ export class WebglSceneComponent implements AfterViewInit {
       this.nearClippingPane,
       this.farClippingPane
     );
-    this.camera.position.y = 100;
+    // this.camera.position.y = 100;
     this.camera.position.z = this.cameraZ;
-    this.camera.rotation.x = -0.3;
+    // this.camera.rotation.x = -0.3;
 
     /* Raycaster */
     this.raycaster = new THREE.Raycaster();
@@ -217,8 +217,28 @@ export class WebglSceneComponent implements AfterViewInit {
   public onResize(event) {
     this.camera.aspect = this.getAspectRatio();
     this.camera.updateProjectionMatrix();
+    this.camera.updateMatrixWorld(true);
 
     this.renderer.setSize(event.target.innerWidth, event.target.innerHeight);
+
+    this.updateFarPlaneVertices();
+  }
+
+  public updateFarPlaneVertices() {
+
+    // Far Plane dimensions
+    let height = 2 * Math.tan(this.camera.fov / 2) * this.camera.far;
+    let width = height * this.camera.aspect;
+
+    let topRight = new THREE.Vector3( width / 2, height / 2, -this.camera.near );
+    topRight.applyMatrix4( this.camera.matrixWorld );
+
+    let bottomLeft = new THREE.Vector3( -width / 2, -height / 2, -this.camera.near );
+    bottomLeft.applyMatrix4( this.camera.matrixWorld );
+
+    let farPlaneVertices: THREE.Box2 = new THREE.Box2(new THREE.Vector2(bottomLeft.x, bottomLeft.y), new THREE.Vector2(topRight.x, topRight.y));
+
+    this.togglefish.setFarPlaneVertices(farPlaneVertices);
   }
 
   public onDocumentMouseDown( event ) {
@@ -267,6 +287,7 @@ export class WebglSceneComponent implements AfterViewInit {
   public ngAfterViewInit() {
     this.createScene();
     this.createSceneSubjects();
+    this.updateFarPlaneVertices();
     this.startRenderingLoop();
   }
 }

@@ -12,6 +12,7 @@ export function ToggleFish(scene) {
 
   let isFinishedLoading: boolean = false;
   let isToggleOn: boolean = false;
+  let farPlaneVertices: THREE.Box2;
 
   // Body
   let bodyMaterial = new THREE.MeshPhongMaterial({ color: COLOUR_TOGGLE_OFF });
@@ -124,18 +125,17 @@ export function ToggleFish(scene) {
 
   this.update = function(time, mouseDownPos) {
     // Move fish a fraction towards the desired position
-    // Restricting movement between -100 and 100 on the horizontal and vertical axis,
-    const RANGE = 100;
-
-    let targetX = this.normalize(mouseDownPos.x, -1, 1, -RANGE, RANGE);
-    let targetY = this.normalize(mouseDownPos.y, -1, 1, -RANGE, RANGE);
+    // Restricting movement between a small fraction of the far plane's horizontal and vertical axis,
+    let targetX = this.normalize(mouseDownPos.x, -1, 1, farPlaneVertices.min.x * 0.05, farPlaneVertices.max.x * 0.05);
+    let targetY = this.normalize(mouseDownPos.y, -1, 1, farPlaneVertices.min.y * 0.05, farPlaneVertices.max.y * 0.05);
     togglefish.position.x += (targetX - togglefish.position.x) * 0.1;
     togglefish.position.y += (targetY - togglefish.position.y) * 0.1;
 
     // Rotate fish a fraction towards the desired rotation
     // Restricting rotation between -0.5 and 0.5 on the horizontal and vertical axis,
-    let rotationX = -1 * this.normalize(mouseDownPos.y, -1, 1, -0.5, 0.5);
-    let rotationY = this.normalize(mouseDownPos.x, -1, 1, -0.5, 0.5);
+    const ROTATION_RANGE = 0.5;
+    let rotationX = -1 * this.normalize(mouseDownPos.y, -1, 1, -ROTATION_RANGE, ROTATION_RANGE);
+    let rotationY = this.normalize(mouseDownPos.x, -1, 1, -ROTATION_RANGE, ROTATION_RANGE);
     togglefish.rotation.x += (rotationX - togglefish.rotation.x) * 0.1;
     togglefish.rotation.y += (rotationY - togglefish.rotation.y) * 0.1;
 
@@ -150,10 +150,11 @@ export function ToggleFish(scene) {
     finTail.rotation.z =  (Math.cos(finAngle) * Math.PI/4) + Math.PI;
 
     // Rotate eyes to look at target
-    const EYE_RANGE = 1000;
-    let eyeTargetX = this.normalize(mouseDownPos.x, -1, 1, -EYE_RANGE, EYE_RANGE);
-    let eyeTargetY = 0;
-    let eyeTargetVector = new THREE.Vector3(eyeTargetX, eyeTargetY, EYE_RANGE);
+    let eyeTargetX = this.normalize(mouseDownPos.x, -1, 1, farPlaneVertices.min.x, farPlaneVertices.max.x);
+    let eyeTargetY = 40;
+    let eyeTargetZ = 800;
+
+    let eyeTargetVector = new THREE.Vector3(eyeTargetX, eyeTargetY, eyeTargetZ);
     eyeRight.lookAt( eyeTargetVector );
     eyeLeft.lookAt( eyeTargetVector );
   };
@@ -162,4 +163,8 @@ export function ToggleFish(scene) {
     isToggleOn = !isToggleOn;
     bodyMaterial.color.setHex( isToggleOn ? COLOUR_TOGGLE_ON : COLOUR_TOGGLE_OFF );
   };
+
+  this.setFarPlaneVertices = function(updatedFarPlaneVertices: THREE.Box2) {
+    farPlaneVertices = updatedFarPlaneVertices;
+  }
 }
