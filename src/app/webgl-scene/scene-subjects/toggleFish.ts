@@ -7,6 +7,8 @@ export function ToggleFish(scene) {
   const COLOUR_TOGGLE_ON: number = 0x5abb5b;
   const COLOUR_TOGGLE_OFF: number = 0xea592e;
   const COLOUR_TOGGLE: number = 0x8A8A8A;
+  const COLOUR_EYE_BALL: number = 0xFFFFFF;
+  const COLOUR_EYE_PUPIL: number = 0x000000;
 
 
   let isToggleOn: boolean = false;
@@ -18,6 +20,10 @@ export function ToggleFish(scene) {
   let finRight: THREE.Mesh = null;
   let finLeft: THREE.Mesh = null;
   let finTail: THREE.Mesh = null;
+
+  // Eyes
+  let eyeBallMaterial = new THREE.MeshPhongMaterial({ color: COLOUR_EYE_BALL });
+  let eyePupilMaterial = new THREE.MeshPhongMaterial({ color: COLOUR_EYE_PUPIL });
 
   // Toggle
   let toggleBaseMaterial = new THREE.MeshPhongMaterial({ color: COLOUR_TOGGLE });
@@ -48,14 +54,16 @@ export function ToggleFish(scene) {
   loader.load("../../../assets/togglefish.json", ( obj ) => {
 
     // Seems like the export to ThreeJS from clara.io rotates the object around the Y-axis by PI
-    obj.rotateY(Math.PI); // Face right
+    // obj.rotateY(Math.PI); // Face right
     // obj.rotateY(-Math.PI/2); // Face back
-    // obj.rotateY(Math.PI/2); // Face front
+    obj.rotateY(Math.PI/2); // Face front
 
-    // Set child object materials and reset vertex normals
-    obj.children.map((mesh: THREE.Mesh) => {
-      mesh.material = bodyMaterial;
-      (mesh.geometry as THREE.Geometry).computeFlatVertexNormals()
+    // Set material and reset vertex normals for all Mesh objects
+    obj.traverse( (obj) => {
+      if (obj instanceof THREE.Mesh) {
+        obj.material = bodyMaterial;
+        (obj.geometry as THREE.Geometry).computeFlatVertexNormals()
+      }
     });
 
     // Fin Right
@@ -75,6 +83,20 @@ export function ToggleFish(scene) {
     // -- alter the finTail's pivot axis to be on the edge
     (finTail.geometry as THREE.Geometry).translate(-25, 0, 0);
     finTail.translateX(25);
+
+    // Eye Right
+    let eyeRight = this.getChildByName(obj, 'togglefish_eye_right');
+    let eyeBallRight = this.getChildByName(eyeRight, 'togglefish_eye_right_ball');
+    eyeBallRight.material = eyeBallMaterial;
+    let eyePupilRight = this.getChildByName(eyeRight, 'togglefish_eye_right_pupil');
+    eyePupilRight.material = eyePupilMaterial;
+
+    // Eye Left
+    let eyeLeft = this.getChildByName(obj, 'togglefish_eye_left');
+    let eyeBallLeft = this.getChildByName(eyeLeft, 'togglefish_eye_left_ball');
+    eyeBallLeft.material = eyeBallMaterial;
+    let eyePupilLeft = this.getChildByName(eyeLeft, 'togglefish_eye_left_pupil');
+    eyePupilLeft.material = eyePupilMaterial;
 
     togglefish.add(obj);
   });
