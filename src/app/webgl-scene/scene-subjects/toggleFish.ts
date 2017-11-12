@@ -103,6 +103,16 @@ export function ToggleFish(scene) {
     let eyePupilLeft = this.getChildByName(eyeLeft, 'togglefish_eye_left_pupil');
     eyePupilLeft.material = eyePupilMaterial;
 
+    // Add edges geometry (Note: shows edges as black lines)
+    // obj.traverse( (obj) => {
+    //   if (obj instanceof THREE.Mesh) {
+    //     let geometry = new THREE.EdgesGeometry( obj.geometry, 1 );
+    //     let material = new THREE.LineBasicMaterial( { color: 0x000000, linewidth: 4 } );
+    //     let edges = new THREE.LineSegments( geometry, material );
+    //     obj.add( edges ); // add wireframe as a child of the parent mesh
+    //   }
+    // });
+
     togglefish.add(obj);
 
     isFinishedLoading = true;

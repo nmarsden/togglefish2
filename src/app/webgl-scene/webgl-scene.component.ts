@@ -58,18 +58,17 @@ export class WebglSceneComponent implements AfterViewInit {
 
   private isFishFollowing: boolean = false;
 
-  /* STAGE PROPERTIES */
-  @Input()
-  public cameraZ: number = 500;
+  private initialCameraPos: THREE.Vector3 = new THREE.Vector3(0, 100, 500);
 
+  /* STAGE PROPERTIES */
   @Input()
   public fieldOfView: number = 70;
 
   @Input('nearClipping')
-  public nearClippingPane: number = 1;
+  public nearClippingPlane: number = 1;
 
   @Input('farClipping')
-  public farClippingPane: number = 1000;
+  public farClippingPlane: number = 2000;
 
 
 
@@ -105,11 +104,12 @@ export class WebglSceneComponent implements AfterViewInit {
     this.camera = new THREE.PerspectiveCamera(
       this.fieldOfView,
       aspectRatio,
-      this.nearClippingPane,
-      this.farClippingPane
+      this.nearClippingPlane,
+      this.farClippingPlane
     );
-    // this.camera.position.y = 100;
-    this.camera.position.z = this.cameraZ;
+    this.camera.position.x = this.initialCameraPos.x;
+    this.camera.position.y = this.initialCameraPos.y;
+    this.camera.position.z = this.initialCameraPos.z;
     // this.camera.rotation.x = -0.3;
 
     /* Raycaster */
@@ -193,8 +193,9 @@ export class WebglSceneComponent implements AfterViewInit {
         // Update camera to move towards its original position
         let x = component.camera.position.x;
         let z = component.camera.position.z;
-        let targetX = 0;
-        let targetZ = component.cameraZ;
+        let targetX = component.initialCameraPos.x;
+        let targetZ = component.initialCameraPos.z;
+
         component.camera.position.x += (targetX - x) * 0.1;
         component.camera.position.z += (targetZ - z) * 0.1;
         component.camera.lookAt(new THREE.Vector3(0, 0, 0));
@@ -227,7 +228,8 @@ export class WebglSceneComponent implements AfterViewInit {
   public updateFarPlaneVertices() {
 
     // Far Plane dimensions
-    let height = 2 * Math.tan(this.camera.fov / 2) * this.camera.far;
+    let farPlane = (this.camera.far / 4); // Note: Actually using 1/4 of the camera frustum far plane
+    let height = 2 * Math.tan(this.camera.fov / 2) * farPlane;
     let width = height * this.camera.aspect;
 
     let topRight = new THREE.Vector3( width / 2, height / 2, -this.camera.near );

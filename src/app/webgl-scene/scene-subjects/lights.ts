@@ -8,7 +8,7 @@ export function Lights(scene) {
 
   let shadowLight = new THREE.DirectionalLight(0xffffff, 1);
   shadowLight.name = 'shadow light';
-  shadowLight.position.set(0, 300, 100);
+  shadowLight.position.set(0, 300, 300);
   scene.add(shadowLight);
 
   // Allow shadow casting

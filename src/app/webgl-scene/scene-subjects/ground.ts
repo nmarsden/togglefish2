@@ -2,7 +2,7 @@ import * as THREE from 'three';
 
 export function Ground(scene) {
 
-  const SIZE: number = 800;
+  const SIZE: number = 1800;
 
   // Ground
   let groundMaterial = new THREE.MeshPhongMaterial({ color: 0xFFDA77 });
@@ -16,6 +16,8 @@ export function Ground(scene) {
   // Add to scene
   scene.add(ground);
 
+  // let axisHelper: THREE.AxisHelper = new THREE.AxisHelper(400);
+  // scene.add(axisHelper);
 
   this.update = function(time, mousePos) {
   };
