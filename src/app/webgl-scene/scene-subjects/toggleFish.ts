@@ -40,7 +40,7 @@ export function ToggleFish(scene) {
   scene.add(togglefish);
 
   let loader = new THREE.ObjectLoader();
-  loader.load("../../../assets/togglefish.json", ( obj ) => {
+  loader.load("assets/togglefish.json", ( obj ) => {
 
     // Seems like the export to ThreeJS from clara.io rotates the object around the Y-axis by PI
     // obj.rotateY(Math.PI); // Face right
