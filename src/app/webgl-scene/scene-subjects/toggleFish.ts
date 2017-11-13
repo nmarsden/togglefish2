@@ -2,20 +2,20 @@ import * as THREE from 'three';
 
 export function ToggleFish(scene) {
 
-  const SIZE: number = 150;
+  const COLOUR_TOGGLE_ON: THREE.Color = new THREE.Color(0x5abb5b);
+  const COLOUR_TOGGLE_OFF: THREE.Color = new THREE.Color(0xea592e);
 
-  const COLOUR_TOGGLE_ON: number = 0x5abb5b;
-  const COLOUR_TOGGLE_OFF: number = 0xea592e;
   const COLOUR_TOGGLE: number = 0x8A8A8A;
   const COLOUR_EYE_BALL: number = 0xFFFFFF;
   const COLOUR_EYE_PUPIL: number = 0x000000;
 
   let isFinishedLoading: boolean = false;
-  let isToggleOn: boolean = false;
+  let isToggleOn: boolean = true;
+  let isToggleAnimating: boolean = false;
   let farPlaneVertices: THREE.Box2;
 
   // Body
-  let bodyMaterial = new THREE.MeshPhongMaterial({ color: COLOUR_TOGGLE_OFF });
+  let bodyMaterial = new THREE.MeshPhongMaterial({ color: COLOUR_TOGGLE_ON });
 
   // Fins
   let finRight: THREE.Mesh = null;
@@ -29,26 +29,12 @@ export function ToggleFish(scene) {
   let eyeLeft: THREE.Mesh = null;
 
   // Toggle
-  let toggleBaseMaterial = new THREE.MeshPhongMaterial({ color: COLOUR_TOGGLE });
-  let toggleBase = new THREE.Mesh(new THREE.BoxGeometry(SIZE / 4, SIZE / 10, SIZE / 4), toggleBaseMaterial);
-  toggleBase.position.y = SIZE / 2 + SIZE / 10;
-  toggleBase.name = 'toggle';
-  toggleBase.castShadow = true;
-
-  let toggleShaftMaterial = new THREE.MeshPhongMaterial({ color: COLOUR_TOGGLE });
-  let toggleShaft = new THREE.Mesh(new THREE.BoxGeometry(SIZE / 2, SIZE / 14, SIZE / 2), toggleShaftMaterial);
-  toggleShaft.position.y = SIZE / 2 + SIZE / 5;
-  toggleShaft.name = 'toggle';
-  toggleShaft.castShadow = true;
-
-  let toggle = new THREE.Group();
-  toggle.add(toggleBase);
-  toggle.add(toggleShaft);
+  let toggleMaterial = new THREE.MeshPhongMaterial({ color: COLOUR_TOGGLE });
+  let toggleShaft: THREE.Mesh = null;
 
   // Togglefish
   let togglefish = new THREE.Group();
   togglefish.name = 'togglefish';
-  togglefish.add(toggle);
 
   // Add to scene
   scene.add(togglefish);
@@ -68,6 +54,20 @@ export function ToggleFish(scene) {
         (obj.geometry as THREE.Geometry).computeFlatVertexNormals()
       }
     });
+
+    // Toggle
+    let toggle = this.getChildByName(obj, 'togglefish_toggle');
+    toggle.getChildByName('togglefish_toggle_base').material = toggleMaterial;
+
+    toggleShaft = this.getChildByName(toggle, 'togglefish_toggle_shaft');
+    toggleShaft.material = toggleMaterial;
+    (toggleShaft.geometry as THREE.Geometry).translate(0, 0, 25);
+    toggleShaft.translateZ(-25);
+    toggleShaft.rotation.y = Math.PI/5;
+
+    let toggleTip = this.getChildByName(toggleShaft, 'togglefish_toggle_tip');
+    toggleTip.material = toggleMaterial;
+    toggleTip.translateZ(25);
 
     // Fin Right
     finRight = this.getChildByName(obj, 'togglefish_fin_right');
@@ -153,6 +153,25 @@ export function ToggleFish(scene) {
       return;
     }
 
+    // Animate toggle
+    if (isToggleAnimating) {
+      // Rotate toggle shaft
+      const TOGGLE_ROTATION_RANGE = Math.PI/5;
+      let targetToggleRotation = isToggleOn ? TOGGLE_ROTATION_RANGE : -TOGGLE_ROTATION_RANGE;
+      toggleShaft.rotation.y += (targetToggleRotation - toggleShaft.rotation.y) * 0.05;
+
+      // Alter body color towards target color
+      let targetColor = isToggleOn ? COLOUR_TOGGLE_ON : COLOUR_TOGGLE_OFF;
+      bodyMaterial.color.r += (targetColor.r - bodyMaterial.color.r) * 0.05;
+      bodyMaterial.color.g += (targetColor.g - bodyMaterial.color.g) * 0.05;
+      bodyMaterial.color.b += (targetColor.b - bodyMaterial.color.b) * 0.05;
+
+      // Check for end of animation
+      if (Math.abs(targetToggleRotation - toggleShaft.rotation.y) < 0.01) {
+        isToggleAnimating = false;
+      }
+    }
+
     // Animate fins
     let finAngle = time % (2 * Math.PI);
     finRight.rotation.x =  (Math.cos(finAngle) * Math.PI/4) - Math.PI/2;
@@ -171,7 +190,7 @@ export function ToggleFish(scene) {
 
   this.toggle = function() {
     isToggleOn = !isToggleOn;
-    bodyMaterial.color.setHex( isToggleOn ? COLOUR_TOGGLE_ON : COLOUR_TOGGLE_OFF );
+    isToggleAnimating = true;
   };
 
   this.setFarPlaneVertices = function(updatedFarPlaneVertices: THREE.Box2) {

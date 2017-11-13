@@ -253,7 +253,7 @@ export class WebglSceneComponent implements AfterViewInit {
 
     let intersects = this.raycaster.intersectObjects( this.scene.children, true );
 
-    if ( intersects.length > 0 && intersects[ 0 ].object.name === 'toggle' ) {
+    if ( intersects.length > 0 && intersects[ 0 ].object.name.startsWith('togglefish_toggle')) {
       this.togglefish.toggle();
     } else {
       this.isMouseDown = true;
