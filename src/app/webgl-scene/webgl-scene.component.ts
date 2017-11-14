@@ -1,4 +1,5 @@
 import { AfterViewInit, Component, ElementRef, Input, ViewChild, Inject } from '@angular/core';
+import { AlertService } from '../service/index';
 import * as THREE from 'three';
 import { Lights } from './scene-subjects/lights';
 import { ToggleFish } from './scene-subjects/toggleFish';
@@ -73,8 +74,9 @@ export class WebglSceneComponent implements AfterViewInit {
 
 
   /* DEPENDENCY INJECTION (CONSTRUCTOR) */
-  constructor(@Inject('Window') window: Window) {
+  constructor(@Inject('Window') window: Window, private alertService: AlertService) {
     this.window = window;
+    this.alertService = alertService;
   }
 
   /* STAGING, ANIMATION, AND RENDERING */
@@ -116,6 +118,9 @@ export class WebglSceneComponent implements AfterViewInit {
     this.raycaster = new THREE.Raycaster();
 
     /* Add event listeners */
+    this.window.addEventListener("resize", this.onResize.bind(this), false);
+    this.window.addEventListener("orientationchange", this.onOrientationChange.bind(this), false);
+
     document.addEventListener("touchstart", this.touch2Mouse, true);
     document.addEventListener("touchmove", this.touch2Mouse, true);
     document.addEventListener("touchend", this.touch2Mouse, true);
@@ -215,12 +220,18 @@ export class WebglSceneComponent implements AfterViewInit {
   /**
    * Update scene after resizing.
    */
-  public onResize(event) {
+  public onOrientationChange() {
+    window.setTimeout(this.onResize.bind(this), 300);
+  }
+
+  public onResize() {
+    // this.alertService.info(`onResize: ${window.innerWidth} x ${window.innerHeight}`);
+
     this.camera.aspect = this.getAspectRatio();
     this.camera.updateProjectionMatrix();
     this.camera.updateMatrixWorld(true);
 
-    this.renderer.setSize(event.target.innerWidth, event.target.innerHeight);
+    this.renderer.setSize(window.innerWidth, window.innerHeight);
 
     this.updateFarPlaneVertices();
   }
