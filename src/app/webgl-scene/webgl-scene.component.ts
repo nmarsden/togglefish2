@@ -82,7 +82,7 @@ export class WebglSceneComponent implements AfterViewInit {
   /* STAGING, ANIMATION, AND RENDERING */
 
   private createSceneSubjects() {
-    this.togglefish = new ToggleFish(this.scene);
+    this.togglefish = new ToggleFish(this.scene, this.alertService);
     this.sceneSubjects = [
       new Lights(this.scene),
       this.togglefish,
