@@ -79,8 +79,8 @@ export function ToggleFish(scene: Scene, alertService: AlertService) {
     toggleShaft.material = toggleMaterial;
     let toggleTip = this.getChildByName(obj, 'togglefish_toggle_tip');
     toggleTip.material = toggleMaterial;
-    this.attachChildrenToParent(scene, obj, new Vector3(0, 0, 40), toggleShaft, toggleTip);
-    toggleShaft.rotation.x = Math.PI/16;
+    this.attachChildrenToParent(scene, obj, new Vector3(0, 75, 0), toggleShaft, toggleTip);
+    toggleShaft.rotation.x = Math.PI/5;
 
     // Fin Right
     finRight = this.getChildByName(obj, 'togglefish_fin_right');
@@ -190,7 +190,7 @@ export function ToggleFish(scene: Scene, alertService: AlertService) {
     // Animate toggle
     if (isToggleAnimating) {
       // Rotate toggle shaft
-      const TOGGLE_ROTATION_RANGE = Math.PI/16;
+      const TOGGLE_ROTATION_RANGE = Math.PI/5;
       let targetToggleRotation = isToggleOn ? TOGGLE_ROTATION_RANGE : -TOGGLE_ROTATION_RANGE;
       toggleShaft.rotation.x += (targetToggleRotation - toggleShaft.rotation.x) * 0.05;
 
@@ -214,12 +214,13 @@ export function ToggleFish(scene: Scene, alertService: AlertService) {
 
     // Rotate eyes to look at target
     let eyeTargetX = this.normalize(mouseDownPos.x, -1, 1, farPlaneVertices.min.x, farPlaneVertices.max.x);
-    let eyeTargetY = 40;
-    let eyeTargetZ = 800;
+    let eyeTargetY = 35;
+    let eyeTargetZ = 300;
 
-    let eyeTargetVector = new Vector3(eyeTargetX, eyeTargetY, eyeTargetZ);
-    eyeRight.lookAt( eyeTargetVector );
-    eyeLeft.lookAt( eyeTargetVector );
+    let eyeRightTargetVector = new Vector3(this.threejs.Math.clamp(eyeTargetX, -150, 50), eyeTargetY, eyeTargetZ);
+    let eyeLeftTargetVector = new Vector3(this.threejs.Math.clamp(eyeTargetX, -50, 150), eyeTargetY, eyeTargetZ);
+    eyeRight.lookAt( eyeRightTargetVector );
+    eyeLeft.lookAt( eyeLeftTargetVector );
   };
 
   this.toggle = function() {
