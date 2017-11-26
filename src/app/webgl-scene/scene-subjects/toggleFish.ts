@@ -1,5 +1,8 @@
 import * as threejs from 'three';
-import { Scene, Color, Box2, MeshPhongMaterial, Mesh, Group, LoadingManager, BufferGeometry, Geometry, AxisHelper, Object3D, Vector3, SceneUtils } from 'three';
+import {
+  Scene, Color, Box2, MeshPhongMaterial, Mesh, Group, LoadingManager, BufferGeometry, Geometry, AxisHelper,
+  Object3D, Vector3, SceneUtils, SphereGeometry
+} from 'three';
 
 import { AlertService } from '../../service/index';
 import OBJLoader from 'three-obj-loader';
@@ -18,12 +21,16 @@ export function ToggleFish(scene: Scene, alertService: AlertService) {
   const COLOUR_EYE_BALL: number = 0xFFFFFF;
   const COLOUR_EYE_PUPIL: number = 0x000000;
 
+  const COLOUR_BUBBLE: number = 0xb5cde5;
+
   const IS_WIREFRAME: boolean = false;
 
   let isFinishedLoading: boolean = false;
   let isToggleOn: boolean = true;
   let isToggleAnimating: boolean = false;
   let farPlaneVertices: Box2;
+
+  let isInitialUpdate = true;
 
   // Body
   let bodyMaterial = new MeshPhongMaterial({color: COLOUR_TOGGLE_ON, wireframe: IS_WIREFRAME});
@@ -40,14 +47,23 @@ export function ToggleFish(scene: Scene, alertService: AlertService) {
   let eyeRight: Mesh = null;
   let eyeLeft: Mesh = null;
 
+  // Mouth
+  let mouthTop: Mesh = null;
+
   // Toggle
   let toggleMaterial = new MeshPhongMaterial({color: COLOUR_TOGGLE, wireframe: IS_WIREFRAME});
   let toggleShaft: Mesh = null;
 
+  // Bubble
+  let bubbleMaterial = new MeshPhongMaterial({ color: COLOUR_BUBBLE, transparent: true, opacity: 0.3, wireframe: IS_WIREFRAME });
+  let bubble = new Mesh(new SphereGeometry(5, 8, 8), bubbleMaterial);
+  bubble.name = 'togglefish_bubble';
+  bubble.castShadow = true;
+  scene.add(bubble);
+
   // Togglefish
   let togglefish = new Group();
   togglefish.name = 'togglefish';
-
   togglefish.visible = true;
 
   // Add to scene
@@ -112,6 +128,10 @@ export function ToggleFish(scene: Scene, alertService: AlertService) {
     eyePupilLeft.material = eyePupilMaterial;
     this.attachChildrenToParent(scene, obj, new Vector3(35, 35, 100), eyeLeft, eyeBallLeft, eyePupilLeft);
 
+    // Mouth
+    mouthTop = this.getChildByName(obj, 'togglefish_mouth_top');
+    this.updatePivotPointToCenter(mouthTop);
+
     // Add edges geometry (Note: shows edges as black lines)
     // obj.traverse( (obj) => {
     //   if (obj instanceof Mesh) {
@@ -143,6 +163,16 @@ export function ToggleFish(scene: Scene, alertService: AlertService) {
     // this.alertService.clear();
     this.alertService.info(`${name} - position: (${obj.position.x}, ${obj.position.y}, ${obj.position.z})`);
     this.alertService.info(`${name} - rotation: (${obj.rotation.x}, ${obj.rotation.y}, ${obj.rotation.z})`);
+
+    let worldPos = obj.position.clone();
+    obj.localToWorld( worldPos );
+    this.alertService.info(`${name} - world position: (${worldPos.x.toFixed(2)}, ${worldPos.y.toFixed(2)}, ${worldPos.z.toFixed(2)})`);
+  };
+
+  this.updatePivotPointToCenter = function(obj: Mesh) {
+    obj.geometry.computeBoundingSphere();
+    let center = obj.geometry.boundingSphere.center;
+    this.updatePivotPoint(obj, center.x, center.y, center.z);
   };
 
   this.updatePivotPoint = function(obj: Mesh, x: number, y: number, z: number) {
@@ -221,6 +251,25 @@ export function ToggleFish(scene: Scene, alertService: AlertService) {
     let eyeLeftTargetVector = new Vector3(this.threejs.Math.clamp(eyeTargetX, -50, 150), eyeTargetY, eyeTargetZ);
     eyeRight.lookAt( eyeRightTargetVector );
     eyeLeft.lookAt( eyeLeftTargetVector );
+
+    // Animate bubble
+    if (isInitialUpdate) {
+      scene.updateMatrixWorld(true);
+      this.setBubbleInitialPosition(mouthTop);
+    }
+
+    let bubblePosY = bubble.position.y + 1;
+    if (bubblePosY > 400) {
+      this.setBubbleInitialPosition(mouthTop);
+    } else {
+      bubble.position.setY(bubblePosY);
+    }
+    isInitialUpdate = false;
+  };
+
+  this.setBubbleInitialPosition = function(mouthTop: Mesh) {
+    bubble.position.setFromMatrixPosition( mouthTop.matrixWorld );
+    bubble.position.setZ(bubble.position.z + 30);
   };
 
   this.toggle = function() {
