@@ -1,8 +1,9 @@
 import * as threejs from 'three';
 import {
   Scene, Color, Box2, MeshPhongMaterial, Mesh, Group, LoadingManager, BufferGeometry, Geometry, AxisHelper,
-  Object3D, Vector3, SceneUtils, SphereGeometry
+  Object3D, Vector3, SceneUtils, SphereGeometry, EdgesGeometry, LineBasicMaterial, LineSegments
 } from 'three';
+import { Bubble } from './bubble';
 
 import { AlertService } from '../../service/index';
 import OBJLoader from 'three-obj-loader';
@@ -21,19 +22,27 @@ export function ToggleFish(scene: Scene, alertService: AlertService) {
   const COLOUR_EYE_BALL: number = 0xFFFFFF;
   const COLOUR_EYE_PUPIL: number = 0x000000;
 
-  const COLOUR_BUBBLE: number = 0xb5cde5;
+  const NUM_BUBBLES = 3;
 
   const IS_WIREFRAME: boolean = false;
+  const IS_TRANSPARENT: boolean = false;
+  const OPACITY: number = 1;
 
   let isFinishedLoading: boolean = false;
   let isToggleOn: boolean = true;
   let isToggleAnimating: boolean = false;
   let farPlaneVertices: Box2;
 
-  let isInitialUpdate = true;
+  // Debug marker
+  let debugMarkerMaterial = new MeshPhongMaterial({color: 0x000000, wireframe: IS_WIREFRAME, transparent: IS_TRANSPARENT, opacity: OPACITY, });
+  let debugMarker = new Mesh(new SphereGeometry(5, 8, 8), debugMarkerMaterial);
+  debugMarker.name = 'debug_marker';
+  debugMarker.castShadow = true;
+  debugMarker.visible = false;
+  scene.add(debugMarker);
 
   // Body
-  let bodyMaterial = new MeshPhongMaterial({color: COLOUR_TOGGLE_ON, wireframe: IS_WIREFRAME});
+  let bodyMaterial = new MeshPhongMaterial({color: COLOUR_TOGGLE_ON, wireframe: IS_WIREFRAME, transparent: IS_TRANSPARENT, opacity: OPACITY});
 
   // Fins
   let finRight: Mesh = null;
@@ -41,25 +50,24 @@ export function ToggleFish(scene: Scene, alertService: AlertService) {
   let finTail: Mesh = null;
 
   // Eyes
-  let eyeBrowMaterial = new MeshPhongMaterial({color: COLOUR_EYE_BROW, wireframe: IS_WIREFRAME});
-  let eyeBallMaterial = new MeshPhongMaterial({color: COLOUR_EYE_BALL, wireframe: IS_WIREFRAME});
-  let eyePupilMaterial = new MeshPhongMaterial({color: COLOUR_EYE_PUPIL, wireframe: IS_WIREFRAME});
+  let eyeBrowMaterial = new MeshPhongMaterial({color: COLOUR_EYE_BROW, wireframe: IS_WIREFRAME, transparent: IS_TRANSPARENT, opacity: OPACITY});
+  let eyeBallMaterial = new MeshPhongMaterial({color: COLOUR_EYE_BALL, wireframe: IS_WIREFRAME, transparent: IS_TRANSPARENT, opacity: OPACITY});
+  let eyePupilMaterial = new MeshPhongMaterial({color: COLOUR_EYE_PUPIL, wireframe: IS_WIREFRAME, transparent: IS_TRANSPARENT, opacity: OPACITY});
   let eyeRight: Mesh = null;
   let eyeLeft: Mesh = null;
 
   // Mouth
-  let mouthTop: Mesh = null;
+  let mouth = { mouthTop: null };
 
   // Toggle
-  let toggleMaterial = new MeshPhongMaterial({color: COLOUR_TOGGLE, wireframe: IS_WIREFRAME});
+  let toggleMaterial = new MeshPhongMaterial({color: COLOUR_TOGGLE, wireframe: IS_WIREFRAME, transparent: IS_TRANSPARENT, opacity: OPACITY});
   let toggleShaft: Mesh = null;
 
   // Bubble
-  let bubbleMaterial = new MeshPhongMaterial({ color: COLOUR_BUBBLE, transparent: true, opacity: 0.3, wireframe: IS_WIREFRAME });
-  let bubble = new Mesh(new SphereGeometry(5, 8, 8), bubbleMaterial);
-  bubble.name = 'togglefish_bubble';
-  bubble.castShadow = true;
-  scene.add(bubble);
+  let bubbles = [];
+  for (let i=0; i< NUM_BUBBLES; i++) {
+    bubbles.push(new Bubble(scene, alertService, { mouth: mouth, delaySecs: ((i+1) * 0.5) }));
+  }
 
   // Togglefish
   let togglefish = new Group();
@@ -129,13 +137,13 @@ export function ToggleFish(scene: Scene, alertService: AlertService) {
     this.attachChildrenToParent(scene, obj, new Vector3(35, 35, 100), eyeLeft, eyeBallLeft, eyePupilLeft);
 
     // Mouth
-    mouthTop = this.getChildByName(obj, 'togglefish_mouth_top');
-    this.updatePivotPointToCenter(mouthTop);
+    mouth.mouthTop = this.getChildByName(obj, 'togglefish_mouth_top');
+    this.updatePivotPointToCenter(mouth.mouthTop);
 
     // Add edges geometry (Note: shows edges as black lines)
     // obj.traverse( (obj) => {
     //   if (obj instanceof Mesh) {
-    //     let geometry = new EdgesGeometry( obj.geometry, 1 );
+    //     let geometry = new EdgesGeometry( (obj.geometry as BufferGeometry), 1 );
     //     let material = new LineBasicMaterial( { color: 0x000000, linewidth: 4 } );
     //     let edges = new LineSegments( geometry, material );
     //     obj.add( edges ); // add wireframe as a child of the parent mesh
@@ -252,24 +260,10 @@ export function ToggleFish(scene: Scene, alertService: AlertService) {
     eyeRight.lookAt( eyeRightTargetVector );
     eyeLeft.lookAt( eyeLeftTargetVector );
 
-    // Animate bubble
-    if (isInitialUpdate) {
-      scene.updateMatrixWorld(true);
-      this.setBubbleInitialPosition(mouthTop);
-    }
-
-    let bubblePosY = bubble.position.y + 1;
-    if (bubblePosY > 400) {
-      this.setBubbleInitialPosition(mouthTop);
-    } else {
-      bubble.position.setY(bubblePosY);
-    }
-    isInitialUpdate = false;
-  };
-
-  this.setBubbleInitialPosition = function(mouthTop: Mesh) {
-    bubble.position.setFromMatrixPosition( mouthTop.matrixWorld );
-    bubble.position.setZ(bubble.position.z + 30);
+    // Animate bubbles
+    bubbles.forEach((bubble) => {
+      bubble.update(time, mouseDownPos);
+    });
   };
 
   this.toggle = function() {
