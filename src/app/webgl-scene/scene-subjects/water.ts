@@ -30,13 +30,15 @@ export function Water(scene: Scene, alertService: AlertService) {
   for (let i = 0; i < numVertices; i++) {
     waterGeometry.vertices[ i ].y = WAVE_SIZE * Math.sin( i / 2 );
   }
+  let bufferGeometry = new BufferGeometry().fromGeometry(waterGeometry);
+
   // Create water mesh
-  let water = new Mesh(waterGeometry as BufferGeometry, waterMaterial);
+  let water = new Mesh(bufferGeometry, waterMaterial);
   water.name = 'water';
   water.position.y = 350;
 
   // Create water edges
-  let edgesGeometry = new EdgesGeometry( (waterGeometry as BufferGeometry), 0 );
+  let edgesGeometry = new EdgesGeometry(bufferGeometry, 0 );
   let edgesMaterial = new LineBasicMaterial( { color: COLOUR_EDGES, linewidth: EDGE_WIDTH } );
   let edges = new LineSegments( edgesGeometry, edgesMaterial );
   edges.position.y = 350 + EDGE_OFFSET_Y;
@@ -78,9 +80,10 @@ export function Water(scene: Scene, alertService: AlertService) {
     }
     waterGeometry.verticesNeedUpdate = true;
     waterGeometry.normalsNeedUpdate = true;
+    bufferGeometry.fromGeometry(waterGeometry);
 
     // Update water edges
-    edges.geometry = new EdgesGeometry( (waterGeometry as BufferGeometry), 0 );
+    edges.geometry = new EdgesGeometry(bufferGeometry, 0 );
     edges.position.y = 350 + EDGE_OFFSET_Y;
   };
 }
