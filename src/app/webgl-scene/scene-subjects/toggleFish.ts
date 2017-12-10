@@ -261,6 +261,7 @@ export function ToggleFish(scene: Scene, alertService: AlertService) {
     eyeLeft.lookAt( eyeLeftTargetVector );
 
     // Animate bubbles
+    // TODO workout a better way to reset the bubble animations so that the bubbles stay more consistently apart
     bubbles.forEach((bubble) => {
       bubble.update(time, mouseDownPos);
     });

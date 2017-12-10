@@ -4,6 +4,7 @@ import * as THREE from 'three';
 import { Lights } from './scene-subjects/lights';
 import { ToggleFish } from './scene-subjects/toggleFish';
 import { Ground } from './scene-subjects/ground';
+import { Water } from './scene-subjects/water';
 
 // DEBUG: declare scene and THREE on the Window interface for use by Three.js Inspector
 declare global {
@@ -49,7 +50,7 @@ export class WebglSceneComponent implements AfterViewInit {
 
   private isMouseDown: boolean = false;
 
-  private orbitDelaySecs: number = 30;
+  private orbitDelaySecs: number = 10;
 
   private timeMouseUp: number = 0;
 
@@ -86,7 +87,8 @@ export class WebglSceneComponent implements AfterViewInit {
     this.sceneSubjects = [
       new Lights(this.scene),
       this.togglefish,
-      new Ground(this.scene)
+      new Ground(this.scene),
+      new Water(this.scene, this.alertService)
     ];
   }
 
@@ -187,21 +189,33 @@ export class WebglSceneComponent implements AfterViewInit {
       }
 
       if (component.isCameraOrbiting) {
-        // Update camera position to orbit around the origin
+        // Update camera position X & Z to orbit around the origin
         let rotSpeed = 0.005;
         let x = component.camera.position.x;
         let z = component.camera.position.z;
         component.camera.position.x = x * Math.cos(rotSpeed) + z * Math.sin(rotSpeed);
         component.camera.position.z = z * Math.cos(rotSpeed) - x * Math.sin(rotSpeed);
+
+        // Update camera position Y to go up & down
+        let orbitElapsedTime = component.clock.getElapsedTime() - component.timeMouseUp - component.orbitDelaySecs;
+        let newY = (500 * Math.sin(orbitElapsedTime * 0.2)) + 100;
+        if (newY < 0) {
+          newY = newY/2;
+        }
+        component.camera.position.y = newY;
+
         component.camera.lookAt(new THREE.Vector3(0, 0, 0));
       } else {
         // Update camera to move towards its original position
         let x = component.camera.position.x;
+        let y = component.camera.position.y;
         let z = component.camera.position.z;
         let targetX = component.initialCameraPos.x;
+        let targetY = component.initialCameraPos.y;
         let targetZ = component.initialCameraPos.z;
 
         component.camera.position.x += (targetX - x) * 0.1;
+        component.camera.position.y += (targetY - y) * 0.1;
         component.camera.position.z += (targetZ - z) * 0.1;
         component.camera.lookAt(new THREE.Vector3(0, 0, 0));
       }

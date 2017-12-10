@@ -1,12 +1,17 @@
-import * as THREE from 'three';
+import {AmbientLight, DirectionalLight} from "three";
 
 export function Lights(scene) {
 
-  let ambientLight = new THREE.AmbientLight(0xffffff, 0.3);
+  let ambientLight = new AmbientLight(0xffffff, 0.3);
   ambientLight.name = 'ambient light';
   scene.add(ambientLight);
 
-  let shadowLight = new THREE.DirectionalLight(0xffffff, 1);
+  let directionLight = new DirectionalLight(0xffffff, 0.5);
+  directionLight.name = 'direction light';
+  directionLight.position.set(0, 0, 100);
+  scene.add(directionLight);
+
+  let shadowLight = new DirectionalLight(0xffffff, 0.8);
   shadowLight.name = 'shadow light';
   shadowLight.position.set(0, 300, 300);
   scene.add(shadowLight);
