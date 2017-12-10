@@ -44,6 +44,8 @@ export class WebglSceneComponent implements AfterViewInit {
 
   private mouse: THREE.Vector2 = new THREE.Vector2();
 
+  private lights: any;
+
   private togglefish: any;
 
   private mouseDownPos = { x:0, y:0 };
@@ -83,9 +85,10 @@ export class WebglSceneComponent implements AfterViewInit {
   /* STAGING, ANIMATION, AND RENDERING */
 
   private createSceneSubjects() {
+    this.lights = new Lights(this.scene);
     this.togglefish = new ToggleFish(this.scene, this.alertService);
     this.sceneSubjects = [
-      new Lights(this.scene),
+      this.lights,
       this.togglefish,
       new Ground(this.scene),
       new Water(this.scene, this.alertService)
@@ -279,6 +282,7 @@ export class WebglSceneComponent implements AfterViewInit {
     let intersects = this.raycaster.intersectObjects( this.scene.children, true );
 
     if ( intersects.length > 0 && intersects[ 0 ].object.name.startsWith('togglefish_toggle')) {
+      this.lights.toggle();
       this.togglefish.toggle();
     } else {
       this.isMouseDown = true;

@@ -4,6 +4,7 @@ import {
   Object3D, Vector3, SceneUtils, SphereGeometry, EdgesGeometry, LineBasicMaterial, LineSegments
 } from 'three';
 import { Bubble } from './bubble';
+import { XMas } from './xmas';
 
 import { AlertService } from '../../service/index';
 import OBJLoader from 'three-obj-loader';
@@ -73,6 +74,9 @@ export function ToggleFish(scene: Scene, alertService: AlertService) {
   let togglefish = new Group();
   togglefish.name = 'togglefish';
   togglefish.visible = true;
+
+  // Xmas (red nose & antlers)
+  let xmas = new XMas(togglefish, alertService);
 
   // Add to scene
   scene.add(togglefish);
@@ -270,6 +274,8 @@ export function ToggleFish(scene: Scene, alertService: AlertService) {
   this.toggle = function() {
     isToggleOn = !isToggleOn;
     isToggleAnimating = true;
+
+    xmas.toggle();
   };
 
   this.setFarPlaneVertices = function(updatedFarPlaneVertices: Box2) {

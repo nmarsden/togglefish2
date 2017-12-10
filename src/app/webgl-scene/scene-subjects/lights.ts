@@ -2,6 +2,8 @@ import {AmbientLight, DirectionalLight} from "three";
 
 export function Lights(scene) {
 
+  let isToggleOn: boolean = true;
+
   let ambientLight = new AmbientLight(0xffffff, 0.3);
   ambientLight.name = 'ambient light';
   scene.add(ambientLight);
@@ -42,5 +44,14 @@ export function Lights(scene) {
   // scene.add( dirLightHelper );
 
   this.update = function(time, mousePos) {
-  }
+  };
+
+  this.toggle = function() {
+    isToggleOn = !isToggleOn;
+
+    ambientLight.visible = isToggleOn;
+    directionLight.visible = isToggleOn;
+    shadowLight.visible = isToggleOn;
+  };
+
 }
