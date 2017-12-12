@@ -5,6 +5,7 @@ import { Lights } from './scene-subjects/lights';
 import { ToggleFish } from './scene-subjects/toggleFish';
 import { Ground } from './scene-subjects/ground';
 import { Water } from './scene-subjects/water';
+import * as Stats from 'stats.js';
 
 // DEBUG: declare scene and THREE on the Window interface for use by Three.js Inspector
 declare global {
@@ -63,6 +64,10 @@ export class WebglSceneComponent implements AfterViewInit {
   private isFishFollowing: boolean = false;
 
   private initialCameraPos: THREE.Vector3 = new THREE.Vector3(0, 100, 500);
+
+  private stats: Stats;
+  private polygonCountPanel: Stats.Panel;
+
 
   /* STAGE PROPERTIES */
   @Input()
@@ -133,6 +138,12 @@ export class WebglSceneComponent implements AfterViewInit {
     document.addEventListener( 'mousedown', this.onDocumentMouseDown.bind(this), false );
     document.addEventListener( 'mousemove', this.onDocumentMouseMove.bind(this), false );
     document.addEventListener( 'mouseup', this.onDocumentMouseUp.bind(this), false );
+
+    /* Stats */
+    this.stats = new Stats();
+    this.polygonCountPanel = this.stats.addPanel( new Stats.Panel( '', '#ff8', '#221' ) );
+    this.stats.showPanel( 0 ); // 0: fps, 1: ms, 2: mb, 3+: custom
+    document.body.appendChild( this.stats.dom );
   }
 
   public touch2Mouse(e) {
@@ -174,6 +185,9 @@ export class WebglSceneComponent implements AfterViewInit {
     let component: WebglSceneComponent = this;
     (function render() {
       requestAnimationFrame(render);
+
+      // Start monitor rendering stats
+      component.stats.begin();
 
       // Update scene objects
       for(let i=0; i<component.sceneSubjects.length; i++) {
@@ -229,6 +243,12 @@ export class WebglSceneComponent implements AfterViewInit {
 
       // Render
       component.renderer.render(component.scene, component.camera);
+
+      // Stop monitoring rendering stats
+      component.stats.end();
+
+      // Update polygon count panel
+      component.polygonCountPanel.update(component.renderer.info.render.faces, 5000);
     }());
   }
 
